@@ -50,7 +50,7 @@ from ikomia.dataprocess.workflow import Workflow
 wf = Workflow()
 
 # Add algorithm
-algo = wf.add_task(name="infer_swnir_super_resolution", auto_connect=True)
+algo = wf.add_task(name="infer_swinir_super_resolution", auto_connect=True)
    
 # Run on your image
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg")
@@ -125,7 +125,7 @@ algo = wf.add_task(name="infer_swinir_super_resolution", auto_connect=True)
 wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg")
 
 # Iterate over outputs
-for output in algo.get_outputs()
+for output in algo.get_outputs():
     # Print information
     print(output)
     # Export it to JSON
