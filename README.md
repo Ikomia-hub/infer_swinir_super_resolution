@@ -10,7 +10,7 @@
     <a href="https://app.ikomia.ai/hub/">
         <img alt="Website" src="https://img.shields.io/website/http/app.ikomia.ai/en.svg?down_color=red&down_message=offline&up_message=online">
     </a>
-    <a href="https://github.com/Ikomia-hub/swinir_super_resolution/blob/main/LICENSE.md">
+    <a href="https://github.com/Ikomia-hub/swinir_super_resolution/blob/main/LICENSE">
         <img alt="GitHub" src="https://img.shields.io/github/license/Ikomia-hub/swinir_super_resolution.svg?color=blue">
     </a>    
     <br>
@@ -23,10 +23,8 @@ Run SwinIR super resolution. This plugin can enlarge an image by a factor 4 each
 
 More than a simple linear interpolation, this plugin can add details while upscaling.
 
-<p float="left">
-  <img src="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg" width="400" /> 
-  <img src="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat_x4.jpeg" width="400" />
-</p>
+![Alt text](https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg "Before")
+![Alt text](https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat_x4.jpeg "After")
 
 ## :rocket: Use with Ikomia API
 
@@ -39,8 +37,6 @@ pip install ikomia
 ```
 
 #### 2. Create your workflow
-
-[Change the sample image URL to fit algorithm purpose]
 
 ```python
 from ikomia.dataprocess.workflow import Workflow
@@ -70,19 +66,16 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 
 ## :pencil: Set algorithm parameters
 
-[Explain each algorithm parameters]
-
 - **use_gan** (bool) - Default True: If True, algorithm will use GAN method to upscale image, else will use PSNR method.    
 - **large_model** (bool) - Default False: If True, algorithm will use the large model, else will use medium model.
 - **cuda** (bool) - Default True: Run with cuda or cpu.
 - **tile** (int) - Default 256: Size of tile. Instead of passing whole image to the deep learning model, which consumes 
 a lot of memory, model is fed with square tiles of fixed size one by one.
 - **overlap_ratio** (float) - Default 0.1: Overlap between tiles in percentage. Overlapping tiles then blending the 
-results lead to a smoother image. Set it to 0 to have no overlap like in the original repo.
+results lead to a smoother image. Set it to 0 to have no overlap like in the original repo. 1,0 is max overlap.
 
 **Parameters** should be in **strings format**  when added to the dictionary.
 
-[Change the sample image URL to fit algorithm purpose]
 
 ```python
 from ikomia.dataprocess.workflow import Workflow
