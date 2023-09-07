@@ -25,7 +25,6 @@ import os
 import torch
 from infer_swinir_super_resolution.SwinIR.main_test_swinir import define_model, setup, get_image_pair, test
 import numpy as np
-import cv2
 from ikomia.utils import strtobool
 from argparse import Namespace
 
