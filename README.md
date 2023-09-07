@@ -23,7 +23,10 @@ Run SwinIR super resolution. This plugin can enlarge an image by a factor 4 each
 
 More than a simple linear interpolation, this plugin can add details while upscaling.
 
+Original image
 ![Low res cat](https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg "Before")
+
+Output
 ![High res cat](https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat_x4.jpeg "After")
 
 ## :rocket: Use with Ikomia API
