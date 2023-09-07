@@ -1,17 +1,17 @@
 <div align="center">
-  <img src="images/icon.png" alt="Algorithm icon">
-  <h1 align="center">dataset_wildreceipt</h1>
+  <img src="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/swinir.png" alt="Algorithm icon">
+  <h1 align="center">infer_swinir_super_resolution</h1>
 </div>
 <br />
 <p align="center">
-    <a href="https://github.com/Ikomia-hub/dataset_wildreceipt">
-        <img alt="Stars" src="https://img.shields.io/github/stars/Ikomia-hub/dataset_wildreceipt">
+    <a href="https://github.com/Ikomia-hub/swinir_super_resolution">
+        <img alt="Stars" src="https://img.shields.io/github/stars/Ikomia-hub/swinir_super_resolution">
     </a>
     <a href="https://app.ikomia.ai/hub/">
         <img alt="Website" src="https://img.shields.io/website/http/app.ikomia.ai/en.svg?down_color=red&down_message=offline&up_message=online">
     </a>
-    <a href="https://github.com/Ikomia-hub/dataset_wildreceipt/blob/main/LICENSE.md">
-        <img alt="GitHub" src="https://img.shields.io/github/license/Ikomia-hub/dataset_wildreceipt.svg?color=blue">
+    <a href="https://github.com/Ikomia-hub/swinir_super_resolution/blob/main/LICENSE.md">
+        <img alt="GitHub" src="https://img.shields.io/github/license/Ikomia-hub/swinir_super_resolution.svg?color=blue">
     </a>    
     <br>
     <a href="https://discord.com/invite/82Tnw9UGGc">
@@ -23,6 +23,10 @@ Run SwinIR super resolution. This plugin can enlarge an image by a factor 4 each
 
 More than a simple linear interpolation, this plugin can add details while upscaling.
 
+<p float="left">
+  <img src="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg" width="400" /> 
+  <img src="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat_x4.jpeg" width="400" />
+</p>
 
 ## :rocket: Use with Ikomia API
 
@@ -48,7 +52,7 @@ wf = Workflow()
 algo = wf.add_task(name="infer_swnir_super_resolution", auto_connect=True)
    
 # Run on your image
-wf.run_on(path="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg")
 
 # Inspect your results
 display(algo.get_input(0).get_image())
@@ -98,7 +102,7 @@ algo.set_parameters({
 })
 
 # Run on your image  
-wf.run_on(path="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg")
 
 # Inspect your results
 display(algo.get_input(0).get_image())
@@ -120,7 +124,7 @@ wf = Workflow()
 algo = wf.add_task(name="infer_swinir_super_resolution", auto_connect=True)
 
 # Run on your image  
-wf.run_on(url="example_image.png")
+wf.run_on(url="https://raw.githubusercontent.com/Ikomia-hub/infer_swinir_super_resolution/main/icons/cat.jpeg")
 
 # Iterate over outputs
 for output in algo.get_outputs()
