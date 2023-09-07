@@ -44,17 +44,19 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
         self.use_gan = True
         self.tile = 256
         self.overlap_ratio = 0.1
+        self.scale = 4
         self.cuda = True
 
     def set_values(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
         # Example : self.windowSize = int(param_map["windowSize"])
-        self.update = strtobool(param_map["cuda"]) != self.cuda or self.large_model != strtobool(param_map['large_model'])
+        self.update = strtobool(param_map["cuda"]) != self.cuda or self.large_model != strtobool(param_map['large_model']) or self.scale != int(param_map["scale"])
         self.large_model = strtobool(param_map["large_model"])
         self.use_gan = strtobool(param_map["use_gan"])
         self.tile = int(param_map["tile"])
         self.overlap_ratio = float(param_map["overlap_ratio"])
+        self.scale = int(param_map["scale"])
         self.cuda = strtobool(param_map["cuda"])
 
     def get_values(self):
@@ -66,6 +68,7 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
         param_map["use_gan"] = str(self.use_gan)
         param_map["tile"] = str(self.tile)
         param_map["overlap_ratio"] = str(self.overlap_ratio)
+        param_map["scale"] = str(self.scale)
         param_map["cuda"] = str(self.cuda)
         return param_map
 
@@ -110,6 +113,9 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
         # Get parameters :
         param = self.get_param_object()
 
+        assert(param.scale in [2, 4], "Scale factor can be only 2 or 4")
+        assert(param.large_model and param.scale==2, "Large models only do x4 upsample")
+
         # Get image from input/output (numpy array):
         srcImage = input.get_image()
 
@@ -120,11 +126,11 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
             self.args.folder_gt = None
             self.args.task = 'real_sr'
 
-            self.args.scale = 4
+            self.args.scale = param.scale
             self.args.large_model = param.large_model
 
             self.args.model_path = os.path.dirname(
-                __file__) + "/model_zoo/swinir/" + model_zoo['gan' if param.use_gan else 'psnr']['large' if param.large_model else 'medium']
+                __file__) + "/model_zoo/swinir/" + model_zoo['gan' if param.use_gan else 'psnr']['large' if param.large_model else 'medium'][str(param.scale)]
 
             # set up model
             if os.path.exists(self.args.model_path):
