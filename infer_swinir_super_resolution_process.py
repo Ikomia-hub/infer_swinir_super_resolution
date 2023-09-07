@@ -113,8 +113,8 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
         # Get parameters :
         param = self.get_param_object()
 
-        assert(param.scale in [2, 4], "Scale factor can be only 2 or 4")
-        assert(param.large_model and param.scale==2, "Large models only do x4 upsample")
+        assert param.scale in [2, 4], "Scale factor can be only 2 or 4"
+        assert not (param.large_model and param.scale==2), "Large models only with scale==4"
 
         # Get image from input/output (numpy array):
         srcImage = input.get_image()

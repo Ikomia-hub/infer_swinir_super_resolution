@@ -79,6 +79,7 @@ Ikomia Studio offers a friendly UI with the same features as the API.
 a lot of memory, model is fed with square tiles of fixed size one by one.
 - **overlap_ratio** (float) - Default 0.1: Overlap between tiles in percentage. Overlapping tiles then blending the 
 results lead to a smoother image. Set it to 0 to have no overlap like in the original repo. 1,0 is max overlap.
+- **scale** (int) - Default 4: Scale factor. Must be 2 or 4. scale 2 is not available for large models.
 
 **Parameters** should be in **strings format**  when added to the dictionary.
 
@@ -98,7 +99,8 @@ algo.set_parameters({
     "large_model": "False",
     "cuda": "True",
     "tile": "256",
-    "overlap_ratio": "0.1"
+    "overlap_ratio": "0.1",
+    "scale": "4"
 })
 
 # Run on your image  
