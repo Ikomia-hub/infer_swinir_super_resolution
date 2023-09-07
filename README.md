@@ -45,6 +45,7 @@ pip install ikomia
 
 ```python
 from ikomia.dataprocess.workflow import Workflow
+from ikomia.utils.displayIO import display
 
 # Initialize the workflow
 wf = Workflow()
@@ -84,6 +85,7 @@ results lead to a smoother image. Set it to 0 to have no overlap like in the ori
 
 ```python
 from ikomia.dataprocess.workflow import Workflow
+from ikomia.utils.displayIO import display
 
 # Init your workflow
 wf = Workflow()
