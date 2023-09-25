@@ -40,7 +40,7 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
         # Place default value initialization here
         # Example : self.windowSize = 25
         self.update = False
-        self.large_model = True
+        self.large_model = False
         self.use_gan = True
         self.tile = 256
         self.overlap_ratio = 0.1
