@@ -236,6 +236,8 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         self.info.repository = "https://github.com/JingyunLiang/SwinIR"
         # Keywords used for search
         self.info.keywords = "swin transformer, super resolution, denoising, deblurring"
+        self.info.algo_type = core.AlgoType.INFER
+        self.info.algo_tasks = "SUPER_RESOLUTION"
 
     def create(self, param=None):
         # Create process object
