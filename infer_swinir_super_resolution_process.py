@@ -38,7 +38,6 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
     def __init__(self):
         core.CWorkflowTaskParam.__init__(self)
         # Place default value initialization here
-        # Example : self.windowSize = 25
         self.update = False
         self.large_model = False
         self.use_gan = True
@@ -50,7 +49,6 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
     def set_values(self, param_map):
         # Set parameters values from Ikomia application
         # Parameters values are stored as string and accessible like a python dict
-        # Example : self.windowSize = int(param_map["windowSize"])
         self.update = strtobool(param_map["cuda"]) != self.cuda or self.large_model != strtobool(param_map['large_model']) or self.scale != int(param_map["scale"])
         self.large_model = strtobool(param_map["large_model"])
         self.use_gan = strtobool(param_map["use_gan"])
@@ -62,14 +60,14 @@ class InferSwinirSuperResolutionParam(core.CWorkflowTaskParam):
     def get_values(self):
         # Send parameters values to Ikomia application
         # Create the specific dict structure (string container)
-        param_map = {}
-        # Example : paramMap["windowSize"] = str(self.windowSize)
-        param_map["large_model"] = str(self.large_model)
-        param_map["use_gan"] = str(self.use_gan)
-        param_map["tile"] = str(self.tile)
-        param_map["overlap_ratio"] = str(self.overlap_ratio)
-        param_map["scale"] = str(self.scale)
-        param_map["cuda"] = str(self.cuda)
+        param_map = {
+            "large_model": str(self.large_model),
+            "use_gan": str(self.use_gan),
+            "tile": str(self.tile),
+            "overlap_ratio": str(self.overlap_ratio),
+            "scale": str(self.scale),
+            "cuda": str(self.cuda)
+        }
         return param_map
 
 
@@ -82,8 +80,6 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
     def __init__(self, name, param):
         dataprocess.C2dImageTask.__init__(self, name)
         # Add input/output of the process here
-        # Example :  self.add_input(dataprocess.CImageIO())
-        #           self.add_output(dataprocess.CImageIO())
         self.model = None
         self.device =None
 
@@ -117,7 +113,7 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
         assert not (param.large_model and param.scale==2), "Large models only with scale==4"
 
         # Get image from input/output (numpy array):
-        srcImage = input.get_image()
+        src_image = input.get_image()
 
         if param.update or self.model is None:
             self.device = torch.device('cuda' if param.cuda and torch.cuda.is_available() else 'cpu')
@@ -153,7 +149,7 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
             param.update = False
 
         if self.model is not None:
-            if srcImage is not None:
+            if src_image is not None:
                 # wrap args in function to work with ikomia.dataprocess.tile_processing.tile_process
                 def process(img):
                     return self.infer(self.args, img)
@@ -163,11 +159,11 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
                 upscale_ratio = self.args.scale
                 divisor = self.window_size
                 minimum_size = divisor
-                dstImage = tile_processing.tile_process(srcImage, tile_size, overlap_ratio,
+                dst_image = tile_processing.tile_process(src_image, tile_size, overlap_ratio,
                                                         upscale_ratio, divisor, minimum_size, process)
 
                 # Set image of input/output (numpy array):
-                output.set_image(np.array(dstImage, dtype='uint8'))
+                output.set_image(np.array(dst_image, dtype='uint8'))
             else:
                 print("No input image")
         else:
@@ -218,12 +214,14 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         # Set process information as string here
         self.info.name = "infer_swinir_super_resolution"
         self.info.short_description = "Image restoration algorithms with Swin Transformer"
-        self.info.description = "Image restoration algorithms with Swin Transformer" \
-                                "It includes denoising, deblurring and super resolution"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Super Resolution"
         self.info.icon_path = "icons/swinir.png"
-        self.info.version = "1.0.1"
+        self.info.version = "1.0.2"
+        # self.info.min_python_version = "3.8.0"
+        # self.info.max_python_version = "3.11.0"
+        self.info.min_ikomia_version = "0.13.0"
+        # self.info.max_ikomia_version = "0.13.0"
         # self.info.icon_path = "your path to a specific icon"
         self.info.authors = "Liang, Jingyun and Cao, Jiezhang and Sun, Guolei and Zhang, Kai and Van Gool, Luc and Timofte, Radu"
         self.info.article = "SwinIR: Image Restoration Using Swin Transformer"
@@ -233,7 +231,8 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         # URL of documentation
         self.info.documentation_link = ""
         # Code source repository
-        self.info.repository = "https://github.com/JingyunLiang/SwinIR"
+        self.info.repository = "https://github.com/Ikomia-hub/infer_swinir_super_resolution"
+        self.info.original_repository = "https://github.com/JingyunLiang/SwinIR"
         # Keywords used for search
         self.info.keywords = "swin transformer, super resolution, denoising, deblurring"
         self.info.algo_type = core.AlgoType.INFER
