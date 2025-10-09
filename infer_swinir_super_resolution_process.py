@@ -1,32 +1,19 @@
 # Copyright (C) 2021 Ikomia SAS
-# Contact: https://www.ikomia.com
-#
-# This file is part of the IkomiaStudio software.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Contact: https://www.ikomia.ai
+import copy
+import requests
+import os
+from argparse import Namespace
+
+import torch
+import numpy as np
 
 from ikomia import core, dataprocess
 from ikomia.dataprocess import tile_processing
-import copy
-from infer_swinir_super_resolution.plugin_utils import model_zoo
-import requests
-import os
-import torch
-from infer_swinir_super_resolution.SwinIR.main_test_swinir import define_model, setup, get_image_pair, test
-import numpy as np
 from ikomia.utils import strtobool
-from argparse import Namespace
+
+from infer_swinir_super_resolution.plugin_utils import model_zoo
+from infer_swinir_super_resolution.SwinIR.main_test_swinir import define_model, setup, get_image_pair, test
 
 
 # --------------------
@@ -217,10 +204,10 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Super Resolution"
         self.info.icon_path = "icons/swinir.png"
-        self.info.version = "1.0.2"
+        self.info.version = "1.1.0"
         # self.info.min_python_version = "3.8.0"
         # self.info.max_python_version = "3.11.0"
-        self.info.min_ikomia_version = "0.13.0"
+        self.info.min_ikomia_version = "0.15.0"
         # self.info.max_ikomia_version = "0.13.0"
         # self.info.icon_path = "your path to a specific icon"
         self.info.authors = "Liang, Jingyun and Cao, Jiezhang and Sun, Guolei and Zhang, Kai and Van Gool, Luc and Timofte, Radu"
@@ -237,6 +224,11 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         self.info.keywords = "swin transformer, super resolution, denoising, deblurring"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "SUPER_RESOLUTION"
+        # Min hardware config
+        self.info.hardware_config.min_cpu = 4
+        self.info.hardware_config.min_ram = 16
+        self.info.hardware_config.gpu_required = True
+        self.info.hardware_config.min_vram = 6
 
     def create(self, param=None):
         # Create process object
