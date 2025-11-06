@@ -1,32 +1,19 @@
 # Copyright (C) 2021 Ikomia SAS
-# Contact: https://www.ikomia.com
-#
-# This file is part of the IkomiaStudio software.
-#
-# This program is free software: you can redistribute it and/or modify
-# it under the terms of the GNU Affero General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU Affero General Public License for more details.
-#
-# You should have received a copy of the GNU Affero General Public License
-# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+# Contact: https://www.ikomia.ai
+import copy
+import requests
+import os
+from argparse import Namespace
+
+import torch
+import numpy as np
 
 from ikomia import core, dataprocess
 from ikomia.dataprocess import tile_processing
-import copy
-from infer_swinir_super_resolution.plugin_utils import model_zoo
-import requests
-import os
-import torch
-from infer_swinir_super_resolution.SwinIR.main_test_swinir import define_model, setup, get_image_pair, test
-import numpy as np
 from ikomia.utils import strtobool
-from argparse import Namespace
+
+from infer_swinir_super_resolution.plugin_utils import model_zoo
+from infer_swinir_super_resolution.SwinIR.main_test_swinir import define_model, setup, get_image_pair, test
 
 
 # --------------------
@@ -94,6 +81,46 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
         # This is handled by the main progress bar of Ikomia application
         return 1
 
+    def _load_model(self):
+        param = self.get_param_object()
+        self.device = torch.device('cuda' if param.cuda and torch.cuda.is_available() else 'cpu')
+        self.args = Namespace()
+        self.args.folder_lq = None
+        self.args.folder_gt = None
+        self.args.task = 'real_sr'
+
+        self.args.scale = param.scale
+        self.args.large_model = param.large_model
+
+        self.args.model_path = os.path.dirname(
+            __file__) + "/model_zoo/swinir/" + \
+                               model_zoo['gan' if param.use_gan else 'psnr']['large' if param.large_model else 'medium'][
+                                   str(param.scale)]
+
+        # set up model
+        if os.path.exists(self.args.model_path):
+            print(f'loading model from {self.args.model_path}')
+        else:
+            os.makedirs(os.path.dirname(self.args.model_path), exist_ok=True)
+            url = 'https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/{}'.format(
+                os.path.basename(self.args.model_path))
+            r = requests.get(url, allow_redirects=True)
+            print(f'downloading model {self.args.model_path}')
+            open(self.args.model_path, 'wb').write(r.content)
+
+        # setup folder and path
+        self.folder, self.save_dir, self.border, self.window_size = setup(self.args)
+        self.args.tile = None  # 256 // self.window_size * self.window_size
+
+        self.model = define_model(self.args)
+        self.model.eval()
+        self.model = self.model.to(self.device)
+        param.update = False
+
+    def init_long_process(self):
+        self._load_model()
+        super().init_long_process()
+
     def run(self):
         # Core function of your process
         # Call begin_task_run for initialization
@@ -101,73 +128,42 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
 
         # Examples :
         # Get input :
-        input = self.get_input(0)
+        img_input = self.get_input(0)
 
         # Get output :
         output = self.get_output(0)
 
         # Get parameters :
         param = self.get_param_object()
-
         assert param.scale in [2, 4], "Scale factor can be only 2 or 4"
         assert not (param.large_model and param.scale==2), "Large models only with scale==4"
 
         # Get image from input/output (numpy array):
-        src_image = input.get_image()
+        src_image = img_input.get_image()
 
-        if param.update or self.model is None:
-            self.device = torch.device('cuda' if param.cuda and torch.cuda.is_available() else 'cpu')
-            self.args = Namespace()
-            self.args.folder_lq = None
-            self.args.folder_gt = None
-            self.args.task = 'real_sr'
+        if param.update:
+            self._load_model()
 
-            self.args.scale = param.scale
-            self.args.large_model = param.large_model
+        if self.model is None:
+            raise RuntimeError("No model loaded")
 
-            self.args.model_path = os.path.dirname(
-                __file__) + "/model_zoo/swinir/" + model_zoo['gan' if param.use_gan else 'psnr']['large' if param.large_model else 'medium'][str(param.scale)]
+        if src_image is None:
+            raise RuntimeError("No input image")
 
-            # set up model
-            if os.path.exists(self.args.model_path):
-                print(f'loading model from {self.args.model_path}')
-            else:
-                os.makedirs(os.path.dirname(self.args.model_path), exist_ok=True)
-                url = 'https://github.com/JingyunLiang/SwinIR/releases/download/v0.0/{}'.format(
-                    os.path.basename(self.args.model_path))
-                r = requests.get(url, allow_redirects=True)
-                print(f'downloading model {self.args.model_path}')
-                open(self.args.model_path, 'wb').write(r.content)
+        # wrap args in function to work with ikomia.dataprocess.tile_processing.tile_process
+        def process(img):
+            return self.infer(self.args, img)
 
-            # setup folder and path
-            self.folder, self.save_dir, self.border, self.window_size = setup(self.args)
-            self.args.tile = None  # 256 // self.window_size * self.window_size
+        tile_size = param.tile
+        overlap_ratio = param.overlap_ratio / 2
+        upscale_ratio = self.args.scale
+        divisor = self.window_size
+        minimum_size = divisor
+        dst_image = tile_processing.tile_process(src_image, tile_size, overlap_ratio,
+                                                upscale_ratio, divisor, minimum_size, process)
 
-            self.model = define_model(self.args)
-            self.model.eval()
-            self.model = self.model.to(self.device)
-            param.update = False
-
-        if self.model is not None:
-            if src_image is not None:
-                # wrap args in function to work with ikomia.dataprocess.tile_processing.tile_process
-                def process(img):
-                    return self.infer(self.args, img)
-
-                tile_size = param.tile
-                overlap_ratio = param.overlap_ratio / 2
-                upscale_ratio = self.args.scale
-                divisor = self.window_size
-                minimum_size = divisor
-                dst_image = tile_processing.tile_process(src_image, tile_size, overlap_ratio,
-                                                        upscale_ratio, divisor, minimum_size, process)
-
-                # Set image of input/output (numpy array):
-                output.set_image(np.array(dst_image, dtype='uint8'))
-            else:
-                print("No input image")
-        else:
-            print("No model loaded")
+        # Set image of input/output (numpy array):
+        output.set_image(np.array(dst_image, dtype='uint8'))
 
         # Step progress bar:
         self.emit_step_progress()
@@ -177,9 +173,8 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
 
     def infer(self, args, img_lq):
         img_lq = np.copy((img_lq.astype(np.float32) / 255.))
-
-        img_lq = np.transpose(img_lq if img_lq.shape[2] == 1 else img_lq[:, :, [2, 1, 0]],
-                              (2, 0, 1))  # HCW-BGR to CHW-RGB
+        # HCW-BGR to CHW-RGB
+        img_lq = np.transpose(img_lq if img_lq.shape[2] == 1 else img_lq[:, :, [2, 1, 0]],(2, 0, 1))
         img_lq = torch.from_numpy(img_lq).float().unsqueeze(0).to(self.device)  # CHW-RGB to NCHW-RGB
 
         # inference
@@ -198,8 +193,8 @@ class InferSwinirSuperResolution(dataprocess.C2dImageTask):
 
         if output.ndim == 3:
             output = np.transpose(output[[2, 1, 0], :, :], (1, 2, 0))  # CHW-RGB to HCW-BGR
-        output = (output * 255.0).round().astype(np.uint8)  # float32 to uint8
 
+        output = (output * 255.0).round().astype(np.uint8)  # float32 to uint8
         return output
 
 
@@ -217,10 +212,10 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Super Resolution"
         self.info.icon_path = "icons/swinir.png"
-        self.info.version = "1.0.2"
+        self.info.version = "1.1.0"
         # self.info.min_python_version = "3.8.0"
         # self.info.max_python_version = "3.11.0"
-        self.info.min_ikomia_version = "0.13.0"
+        self.info.min_ikomia_version = "0.15.0"
         # self.info.max_ikomia_version = "0.13.0"
         # self.info.icon_path = "your path to a specific icon"
         self.info.authors = "Liang, Jingyun and Cao, Jiezhang and Sun, Guolei and Zhang, Kai and Van Gool, Luc and Timofte, Radu"
@@ -237,6 +232,11 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         self.info.keywords = "swin transformer, super resolution, denoising, deblurring"
         self.info.algo_type = core.AlgoType.INFER
         self.info.algo_tasks = "SUPER_RESOLUTION"
+        # Min hardware config
+        self.info.hardware_config.min_cpu = 4
+        self.info.hardware_config.min_ram = 16
+        self.info.hardware_config.gpu_required = True
+        self.info.hardware_config.min_vram = 6
 
     def create(self, param=None):
         # Create process object
