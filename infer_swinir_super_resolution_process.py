@@ -212,10 +212,10 @@ class InferSwinirSuperResolutionFactory(dataprocess.CTaskFactory):
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Super Resolution"
         self.info.icon_path = "icons/swinir.png"
-        self.info.version = "1.1.1"
+        self.info.version = "1.2.0"
         # self.info.min_python_version = "3.8.0"
         # self.info.max_python_version = "3.11.0"
-        self.info.min_ikomia_version = "0.15.0"
+        self.info.min_ikomia_version = "0.16.0"
         # self.info.max_ikomia_version = "0.13.0"
         # self.info.icon_path = "your path to a specific icon"
         self.info.authors = "Liang, Jingyun and Cao, Jiezhang and Sun, Guolei and Zhang, Kai and Van Gool, Luc and Timofte, Radu"

@@ -1,12 +1,14 @@
 # Copyright (C) 2021 Ikomia SAS
 # Contact: https://www.ikomia.com
-from ikomia import core, dataprocess
-from ikomia.utils import pyqtutils, qtconversion
-from infer_swinir_super_resolution.infer_swinir_super_resolution_process import InferSwinirSuperResolutionParam
+# PyQt GUI framework
+from PyQt6.QtWidgets import *
+
 from torch.cuda import is_available
 
-# PyQt GUI framework
-from PyQt5.QtWidgets import *
+from ikomia import core, dataprocess
+from ikomia.utils import pyqtutils, qtconversion
+
+from infer_swinir_super_resolution.infer_swinir_super_resolution_process import InferSwinirSuperResolutionParam
 
 
 # --------------------
